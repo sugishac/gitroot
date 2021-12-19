@@ -5,6 +5,7 @@ const tmp = require("tmp-promise");
 const execute = require("../execute.js");
 const updateRepo = require("./updateRepo.js");
 const getCurrentUser = require("../lib/getCurrentUser.js");
+const checkDeleted = require("./checkDeletedFile");
 
 async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
   // 1. Updating The Code From Base Folder To Target Folder
@@ -88,14 +89,22 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
     filesUpdated = filesUpdated.filter(
       (p) => path.join(tmpDir.path, p) != tmpDir.path
     );
-    if (filesUpdated.length == 0) {
+
+    let filesDeleted = await checkDeleted(src);
+
+    if (filesUpdated.length == 0 && filesDeleted.length === 0) {
       console.log("No Files Changed Exiting...");
       tmpDir.cleanup();
       process.exit();
     } else {
-      console.log("List of files changed");
+      console.log("List of files added/modified");
       for (let files in filesUpdated) {
         console.log(filesUpdated[files]);
+      }
+
+      console.log("List of files deleted");
+      for (let filesDel in filesDeleted) {
+        console.log(filesDeleted[filesDel]);
       }
       const getDetails = await getCurrentUser();
       // Move To Next File
@@ -104,7 +113,9 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
         "gitautomation",
         "develop",
         filesUpdated,
-        tmpDir.path
+        tmpDir.path,
+        filesDeleted,
+        src
       );
     }
   } catch (err) {

@@ -1,6 +1,6 @@
 const octokit = require("../lib/initialSetup");
-const readline = require("readline-sync");
 const updateFileContents = require("./updateASingleFile.js");
+const deleteAFile = require("./deleteAFile");
 const createPR = require("./createPullRequest.js");
 const prompt = require("prompt");
 const { promisify } = require("util");
@@ -10,7 +10,9 @@ async function updateRepo(
   repo = "",
   base_branch = "",
   filesModified = [],
-  tmpDir = ""
+  tmpDir = "",
+  filesDeleted = [],
+  source = ""
 ) {
   // 1. Getting The Latest Commit Sha
   console.log("Getting The Latest Commit Sha");
@@ -54,21 +56,33 @@ async function updateRepo(
     }
   }
 
-  // 3. Updated The Files In New Branch
-  console.log("Updated The Files In New Branch");
-  try {
-    for (let file in filesModified) {
-      await updateFileContents(
-        owner,
-        repo,
-        filesModified[file],
-        branch_name,
-        tmpDir
-      );
-    }
-  } catch (err) {}
+  // 3. Updating (Adding/Modiying) The Files In New Branch
+  if (filesModified.length > 0) {
+    console.log("Updating (Adding/Modiying) The Files In New Branch");
+    try {
+      for (let file in filesModified) {
+        await updateFileContents(
+          owner,
+          repo,
+          filesModified[file],
+          branch_name,
+          tmpDir
+        );
+      }
+    } catch (err) {}
+  }
 
-  // 4. Creating A Pull Request
+  // 4. Deleting The Files In New Branch
+  if (filesDeleted.length > 0) {
+    console.log("Deleting The Files In New Branch");
+    try {
+      for (let file in filesDeleted) {
+        await deleteAFile(owner, repo, filesDeleted[file], branch_name, source);
+      }
+    } catch (err) {}
+  }
+
+  // 5. Creating A Pull Request
   console.log("Creating A Pull Request");
   try {
     let prLink = await createPR(owner, repo, base_branch, branch_name);
