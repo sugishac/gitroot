@@ -1,0 +1,16 @@
+{
+  "name": "cloneproject",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified ddf\" && exit 1",
+    "demo": "cross-env-shell echo \"This is a demo script ${npm_config_args1}\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "npmscripts": "file:.."
+  }
+}

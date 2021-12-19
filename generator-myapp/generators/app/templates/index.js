@@ -1,0 +1,1 @@
+console.log('You have created project with the name <%= projectName %>')

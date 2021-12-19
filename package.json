@@ -1,0 +1,37 @@
+{
+  "name": "npmscripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "sitesgits": "src/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "demo": "echo \"This is a demo script\"",
+    "prestartfile": "echo \"Index File Is Starting\"",
+    "startfile": "cross-env-shell node src/index.js --brand=${npm_config_brand}",
+    "poststartfile": "echo \"Index File Has Finished\"",
+    "exampleRunSeries": "run-s startfile demo test",
+    "exampleRunParallel": "run-p startfile demo test",
+    "settingEnvVar": "cross-env NODE_ENV=\"devolpment\" npm run startfile",
+    "settingEnvArgs": "cross-env-shell NODE_ENV=\"dev\" echo \" ${npm_config_sample}  ${NODE_ENV}\"",
+    "prefixExampleForRunningScripts": "cross-env npm --prefix cloneProject run demo",
+    "prefixExampleForPassingArgs": "cross-env-shell npm --prefix cloneProject run demo --args1=${npm_config_args1}",
+    "usingNesting": "cd cloneProject && npm run demo",
+    "sample": "run-s sample:*",
+    "sample:one": "echo This is sample one",
+    "sample:two": "echo This is sample two",
+    "sample:three": "echo This is sample three"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "dir-compare": "^3.3.0",
+    "gulp": "^4.0.2",
+    "minimist": "^1.2.5",
+    "path": "^0.12.7",
+    "tmp-promise": "^3.0.3"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "gitautomation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "gitautomate": "src/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/rest": "^18.12.0",
+    "dir-compare": "^3.3.0",
+    "octokit": "^1.7.1",
+    "prompt": "^1.2.0",
+    "prompts": "^2.4.2",
+    "readline-sync": "^1.4.10",
+    "tmp-promise": "^3.0.3"
+  }
+}

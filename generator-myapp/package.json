@@ -1,0 +1,22 @@
+{
+  "name": "generator-myapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "files": [
+    "generators"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init": "cross-env-shell npx yo myapp --brand=${npm_config_brand}"
+  },
+  "keywords": [
+    "generator"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "yeoman-generator": "^5.4.2"
+  }
+}
