@@ -22,7 +22,11 @@
     "sample": "run-s sample:*",
     "sample:one": "echo This is sample one",
     "sample:two": "echo This is sample two",
-    "sample:three": "echo This is sample three"
+    "sample:three": "echo This is sample three",
+    "install-packages": "run-p install-packages:*",
+    "install-packages:git": "cd gitautomation && npm install && npm link --force",
+    "install-packages:generator": "cd generator-myapp && npm install && npm link --force",
+    "install-packages:main": "npm install"
   },
   "author": "",
   "license": "ISC",
