@@ -6,8 +6,21 @@ const execute = require("../execute.js");
 const updateRepo = require("./updateRepo.js");
 const getCurrentUser = require("../lib/getCurrentUser.js");
 const checkDeleted = require("./checkDeletedFile");
+const octokit = require("../lib/initialSetup");
 
 async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
+  // try {
+  //   const getDetails = await getCurrentUser();
+  //   let branch_check = await octokit.rest.git.getRef({
+  //     owner: getDetails,
+  //     repo: 'gitautomation',
+  //     ref : 'heads/develop'
+  //   });
+  //   console.log(branch_check)
+  // } catch (err) {
+  //   console.log(err)
+  // }
+
   // 1. Updating The Code From Base Folder To Target Folder
   const source = path.resolve(src);
   const destination = path.resolve(des);
@@ -85,12 +98,19 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
         cwd: tmpDir.path,
       }
     );
-    let filesUpdated = filesModified.split("\n");
-    filesUpdated = filesUpdated.filter(
+    let filesUpdatedClone = filesModified.split("\n");
+    filesUpdatedClone = filesUpdatedClone.filter(
       (p) => path.join(tmpDir.path, p) != tmpDir.path
     );
 
-    let filesDeleted = await checkDeleted(src);
+    let filesDeletedClone = await checkDeleted(src);
+    let filesDeleted = filesDeletedClone.map((p) =>
+      p.slice(src.length + 1, p.length)
+    );
+    
+    let filesUpdated = filesUpdatedClone.filter(
+      (p) => !filesDeleted.includes(p)
+    );
 
     if (filesUpdated.length == 0 && filesDeleted.length === 0) {
       console.log("No Files Changed Exiting...");

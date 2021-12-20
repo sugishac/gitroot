@@ -1,19 +1,12 @@
 const octokit = require("../lib/initialSetup");
 
-async function deleteAFile(
-  owner = "",
-  repo = "",
-  path = "",
-  branch_name = "",
-  src = ""
-) {
-  let trimmedPath = path.slice(src.length + 1, path.length);
+async function deleteAFile(owner = "", repo = "", path = "", branch_name = "") {
   try {
-    console.log(`Deleting ${trimmedPath}`);
+    console.log(`Deleting ${path}`);
     const { data } = await octokit.rest.repos.getContent({
       owner: owner,
       repo: repo,
-      path: trimmedPath,
+      path: path,
       ref: branch_name,
     });
 
@@ -22,8 +15,8 @@ async function deleteAFile(
     await octokit.rest.repos.deleteFile({
       owner,
       repo,
-      path: trimmedPath,
-      message: `Deleting File ${trimmedPath}`,
+      path: path,
+      message: `Deleting File ${path}`,
       sha: currentFileSha,
       branch: branch_name,
     });
@@ -31,8 +24,10 @@ async function deleteAFile(
     const { response = {} } = err;
     const { data = {} } = response;
     const { message = "" } = data;
-    if (message == "Not Found") {
-      console.log(`File: ${trimmedPath} is not present in the develop branch for deletion`);
+    if (message === "Not Found") {
+      console.log(
+        `File: ${path} is not present in the develop branch for deletion`
+      );
     } else {
       console.log(err);
     }
