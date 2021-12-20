@@ -5,23 +5,35 @@ const tmp = require("tmp-promise");
 const execute = require("../execute.js");
 const updateRepo = require("./updateRepo.js");
 const getCurrentUser = require("../lib/getCurrentUser.js");
-const checkDeleted = require("./checkDeletedFile");
-const octokit = require("../lib/initialSetup");
+const checkDeleted = require("./checkDeletedFile.js");
+const getBranch = require("./getBranch.js");
 
-async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
-  // try {
-  //   const getDetails = await getCurrentUser();
-  //   let branch_check = await octokit.rest.git.getRef({
-  //     owner: getDetails,
-  //     repo: 'gitautomation',
-  //     ref : 'heads/develop'
-  //   });
-  //   console.log(branch_check)
-  // } catch (err) {
-  //   console.log(err)
-  // }
+async function checkUpdateRepo(
+  src = "baseProject",
+  des = "targetProject",
+  exisiting_branch = undefined
+) {
+  // 1. Checking If The Given Branch Exist For 'Update-Exist'
+  let branchExistCheck = false;
+  let branchExistSha = null;
+  if (exisiting_branch != undefined) {
+    const getDetails = await getCurrentUser();
+    let getBranchDetails = await getBranch(
+      getDetails,
+      "gitautomation",
+      exisiting_branch
+    );
+    branchExistCheck = getBranchDetails.data ? true : false;
+    console.log(
+      `Branch: ${exisiting_branch} ${branchExistCheck ? "Exist" : "Not Exist"}`
+    );
+    branchExistSha = branchExistCheck ? getBranchDetails.data.sha : null;
+    if (!branchExistCheck) {
+      process.exit();
+    }
+  }
 
-  // 1. Updating The Code From Base Folder To Target Folder
+  // 2. Updating The Code From Base Folder To Target Folder
   const source = path.resolve(src);
   const destination = path.resolve(des);
   if (!fs.existsSync(source)) {
@@ -43,7 +55,7 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
       },
     });
   }
-  // 2. Creating A New Temporary Directory In Order To Update The Code
+  // 3. Creating A New Temporary Directory In Order To Update The Code
   console.log("Creating A New Temporary Directory In Order To Update The Code");
   try {
     var tmpDir = await tmp.dir({
@@ -54,7 +66,7 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
     console.log("Temporary File Path", tmpDir.path);
   } catch (err) {}
 
-  // 3. Cloning The Develop Branch In Temporary Folder
+  // 4. Cloning The Develop Branch In Temporary Folder
   try {
     console.log("Cloning The Develop Branch In Temporary Folder");
     if (!fs.existsSync(tmpDir.path)) {
@@ -64,14 +76,16 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
       process.exit();
     } else {
       await execute(
-        `git clone --single-branch --branch develop https://github.com/robinatwork1998/gitautomation.git ${tmpDir.path} `,
+        `git clone --single-branch --branch ${
+          branchExistCheck ? exisiting_branch : "develop"
+        } https://github.com/robinatwork1998/gitautomation.git ${tmpDir.path} `,
         {
           cwd: tmpDir.path,
         }
       );
     }
 
-    // 4. Updating The Temporary Folder With The Target Folder
+    // 5. Updating The Temporary Folder With The Target Folder
     console.log("Updating The Temporary Folder With The Target Folder");
     fse.copySync(destination, tmpDir.path, {
       overwrite: true,
@@ -80,7 +94,7 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
     tmpDir.cleanup();
   }
 
-  // 5. Checking The Different Files That Are Added / Deleted / Modified
+  // 6. Checking The Different Files That Are Added / Deleted / Modified
   console.log(
     "Checking The Different Files That Are Added / Deleted / Modified"
   );
@@ -107,7 +121,7 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
     let filesDeleted = filesDeletedClone.map((p) =>
       p.slice(src.length + 1, p.length)
     );
-    
+
     let filesUpdated = filesUpdatedClone.filter(
       (p) => !filesDeleted.includes(p)
     );
@@ -127,6 +141,7 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
         console.log(filesDeleted[filesDel]);
       }
       const getDetails = await getCurrentUser();
+
       // Move To Next File
       let update = await updateRepo(
         getDetails,
@@ -135,7 +150,10 @@ async function checkUpdateRepo(src = "baseProject", des = "targetProject") {
         filesUpdated,
         tmpDir.path,
         filesDeleted,
-        src
+        src,
+        branchExistCheck,
+        branchExistSha,
+        exisiting_branch
       );
     }
   } catch (err) {

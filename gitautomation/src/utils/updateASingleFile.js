@@ -13,7 +13,6 @@ async function updateFileContents(
   tmpPath = ""
 ) {
   const response = await getFileContents(owner, repo, path, branch_name);
-  console.log("response", response);
   const currentFileSha = response === undefined ? undefined : response.data.sha;
   const updateMessage = currentFileSha
     ? `Updating ${path}`

@@ -12,37 +12,45 @@ async function updateRepo(
   filesModified = [],
   tmpDir = "",
   filesDeleted = [],
-  source = ""
+  source = "",
+  branchExistCheck = false,
+  branchExistSha = null,
+  exisiting_branch = undefined
 ) {
-
-  // 1. Getting The Latest Commit Sha
-  console.log("Getting The Latest Commit Sha");
+  // 1. Branch Validation Checking
+  console.log("Branch Validation Checking");
+  let branch_name;
+  let branch_sha;
   try {
-    var _tempRes = await octokit.repos.getCommit({
-      owner: owner,
-      repo: repo,
-      ref: `heads/${base_branch}`,
-    });
-  } catch (err) {}
-  // 2. Creating A New Branch Using The Latest Sha
-  console.log("Creating A New Branch Using The Latest Sha");
+    if (branchExistCheck) {
+      branch_name = exisiting_branch;
+      branch_sha = branchExistSha;
+    } else {
+      prompt.start();
+      let promptData = promisify(prompt.get);
+      console.log("Enter the new branch name");
+      const { branch } = await promptData(["branch"]);
+      branch_name = branch;
 
-  try {
-    prompt.start();
-    let promptData = promisify(prompt.get);
-    console.log("Enter the new branch name");
-    var { branch: branch_name } = await promptData(["branch"]);
-    console.log(branch);
-  } catch (err) {}
+      // 2. Getting The Latest Commit Sha
+      console.log("Getting The Latest Commit Sha");
 
-  try {
-    const createBranch = await octokit.rest.git.createRef({
-      owner: owner,
-      repo: repo,
-      ref: `refs/heads/${branch_name}`,
-      sha: _tempRes.data.sha,
-    });
-    console.log(`Branch: ${branch_name} Created Successfully`);
+      const _tempRes = await octokit.repos.getCommit({
+        owner: owner,
+        repo: repo,
+        ref: `heads/${base_branch}`,
+      });
+
+      branch_sha = _tempRes.data.sha;
+
+      const createBranch = await octokit.rest.git.createRef({
+        owner: owner,
+        repo: repo,
+        ref: `refs/heads/${branch_name}`,
+        sha: branch_sha,
+      });
+      console.log(`Branch: ${branch_name} Created Successfully`);
+    }
   } catch (err) {
     const { response = {}, status = "" } = err;
     if (
@@ -88,7 +96,9 @@ async function updateRepo(
   try {
     let prLink = await createPR(owner, repo, base_branch, branch_name);
     console.log("Link: ", prLink);
-  } catch (err) {}
+  } catch (err) {
+    console.log(err)
+  }
 }
 
 module.exports = updateRepo;
